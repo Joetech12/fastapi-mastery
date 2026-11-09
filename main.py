@@ -1,22 +1,20 @@
 
 from fastapi import FastAPI
 
-from utils.calculator import add, multiply
+from routers import users
 
 app = FastAPI()
 
 
 @app.get("/")
 def home():
-    return {"message": "Welcome to FastAPI!"}
-
-
-@app.get("/calculate")
-def calculate():
-    addition = add(10, 5)
-    multiplication = multiply(10, 5)
-
     return {
-        "addition": addition,
-        "multiplication": multiplication
+        "message": "Welcome to my FastAPI application!"
     }
+
+
+app.include_router(
+    users.router,
+    prefix="/users",
+    tags=["Users"]
+)
