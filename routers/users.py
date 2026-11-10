@@ -1,6 +1,7 @@
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 
+from dependencies.pagination import pagination_params
 from schemas.user import (
     UserCreate,
     UserUpdate,
@@ -22,9 +23,17 @@ users = [
 
 # GET: Retrieve all users
 @router.get("/", response_model=UserListResponse)
-def get_users():
+def get_users(
+    pagination: dict = Depends(pagination_params)
+):
+
+    limit = pagination["limit"]
+    offset = pagination["offset"]
+
+    paginated_users = users[offset:offset + limit]
+
     return {
-        "users": users
+        "users": paginated_users
     }
 
 
