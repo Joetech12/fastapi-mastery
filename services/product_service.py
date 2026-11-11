@@ -10,7 +10,8 @@ class ProductService:
                 "name": "Laptop",
                 "category": "electronics",
                 "price": 1200000,
-                "stock": 10
+                "stock": 10,
+                "status": "active"
             },
             {
                 "id": 2,
@@ -18,7 +19,8 @@ class ProductService:
                 "name": "Phone",
                 "category": "electronics",
                 "price": 750000,
-                "stock": 15
+                "stock": 15,
+                "status": "active"
             },
             {
                 "id": 3,
@@ -26,7 +28,8 @@ class ProductService:
                 "name": "Chair",
                 "category": "furniture",
                 "price": 150000,
-                "stock": 20
+                "stock": 20,
+                "status": "active"
             }
         ]
 
@@ -58,7 +61,8 @@ class ProductService:
             "name": product_data.name,
             "category": product_data.category,
             "price": product_data.price,
-            "stock": product_data.stock
+            "stock": product_data.stock,
+            "status": product_data.status
         }
 
         self.products.append(new_product)
