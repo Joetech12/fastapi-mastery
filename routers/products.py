@@ -1,134 +1,57 @@
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from dependencies.pagination import pagination_params
-from schemas.product import ProductCreate
+from schemas.product import ProductCreate, ProductResponse
+from services.product_service import ProductService
+
 
 router = APIRouter()
 
 
-products = [
-    {
-        "id": 1,
-        "sku": "PROD-1001",
-        "name": "Laptop",
-        "category": "electronics",
-        "price": 1200000,
-        "stock": 10
-    },
-    {
-        "id": 2,
-        "sku": "PROD-1002",
-        "name": "Phone",
-        "category": "electronics",
-        "price": 750000,
-        "stock": 15
-    },
-    {
-        "id": 3,
-        "sku": "PROD-1003",
-        "name": "Chair",
-        "category": "furniture",
-        "price": 150000,
-        "stock": 20
-    },
-    {
-        "id": 4,
-        "sku": "PROD-1004",
-        "name": "Desk",
-        "category": "furniture",
-        "price": 250000,
-        "stock": 8
-    },
-    {
-        "id": 5,
-        "sku": "PROD-1005",
-        "name": "Headphones",
-        "category": "electronics",
-        "price": 85000,
-        "stock": 30
-    }
-]
-
-
-# GET: Retrieve all products with pagination
-@router.get("/")
+@router.get("/", response_model=list[ProductResponse])
 def get_products(
-    pagination: dict = Depends(pagination_params)
+    product_service: ProductService = Depends(ProductService)
 ):
 
-    limit = pagination["limit"]
-    offset = pagination["offset"]
-
-    paginated_products = products[offset:offset + limit]
-
-    return {
-        "total": len(products),
-        "limit": limit,
-        "offset": offset,
-        "products": paginated_products
-    }
+    return product_service.get_all_products()
 
 
-# GET: Filter products
-@router.get("/search/filter")
-def filter_products(
-    category: str | None = None,
-    max_price: float | None = None
+@router.get("/{product_id}", response_model=ProductResponse)
+def get_product(
+    product_id: int,
+    product_service: ProductService = Depends(ProductService)
 ):
 
-    filtered_products = products
+    product = product_service.get_product_by_id(product_id)
 
-    if category is not None:
-        filtered_products = [
-            product for product in filtered_products
-            if product["category"] == category
-        ]
+    if product is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
 
-    if max_price is not None:
-        filtered_products = [
-            product for product in filtered_products
-            if product["price"] <= max_price
-        ]
-
-    return {
-        "products": filtered_products
-    }
+    return product
 
 
-# GET: Retrieve one product
-@router.get("/{product_id}")
-def get_product(product_id: int):
-
-    for product in products:
-        if product["id"] == product_id:
-            return product
-
-    raise HTTPException(
-        status_code=404,
-        detail="Product not found"
-    )
-
-
-# POST: Create a product
 @router.post(
     "/",
+    response_model=ProductResponse,
     status_code=status.HTTP_201_CREATED
 )
-def create_product(product_data: ProductCreate):
+def create_product(
+    product_data: ProductCreate,
+    product_service: ProductService = Depends(ProductService)
+):
 
-    new_product = {
-        "id": max(product["id"] for product in products) + 1,
-        "sku": product_data.sku,
-        "name": product_data.name,
-        "category": product_data.category,
-        "price": product_data.price,
-        "stock": product_data.stock
-    }
+    try:
 
-    products.append(new_product)
+        new_product = product_service.create_product(product_data)
 
-    return {
-        "message": "Product created successfully",
-        "product": new_product
-    }
+        return new_product
+
+    except ValueError as error:
+
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(error)
+        )

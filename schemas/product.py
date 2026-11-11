@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field
 
 
 class ProductCreate(BaseModel):
+
     sku: str = Field(
         pattern=r"^PROD-\d{4}$"
     )
@@ -24,3 +25,13 @@ class ProductCreate(BaseModel):
     stock: int = Field(
         ge=0
     )
+
+
+class ProductResponse(BaseModel):
+
+    id: int
+    sku: str
+    name: str
+    category: str
+    price: float
+    stock: int
